@@ -131,8 +131,10 @@ iPath = 1:length(pathlist);
 printmat(dstat3,'Descriptive Statistics Summary (DIFFERENCE)',...
     'Difference','Max Min Range Median Mean Std Var');
 
-%% MISCELLANEOUS
+%% MISCELLANEOUS (for Progress Report)
 
+% PAGE 2-4 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% IRL thickness of each individual participant:
 for i=1:5
 figure;
 imagesc(all_thicknessIRL(:,:,i));
@@ -157,6 +159,24 @@ ylabel('(Inferior)               Pixel Location               (Superior)');
 ylabel(colorbar,'Thickness (pixel)');
 end
 
+% PAGE 5 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Boxplot of averaged control minus averaged T1D IRL thickness
+all_thicknessIRL_columns = zeros(262144,13,1);
+for i = 1:13;
+    for j = 2:512;
+        all_thicknessIRL_columns(((j-1)*(512)):((j*512)-1),i,1)...
+            = all_thicknessIRL(1:512,j,i);
+        all_thicknessIRL_columns(1:512,i,1) = all_thicknessIRL(1:512,1,i);
+        all_thicknessIRL_columns(262144,i,1) = all_thicknessIRL(512,512,i);
+    end
+end
+boxplot(all_thicknessIRL_columns);
+title({'IRL Thickness of Individual Participants'});
+xlabel('Participant');
+ylabel('IRL Thickness');
+
+% PAGE 6 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Averaged control and averaged T1D IRL thicknesses
 figure;
 imagesc(con_thicknessIRLMean(:,:));
 colorbar;
@@ -177,53 +197,7 @@ xlabel('(Nasal)               Pixel Location               (Temporal)');
 ylabel('(Inferior)               Pixel Location               (Superior)');
 ylabel(colorbar,'Thickness (pixel)');
 
-figure;
-histogram(con_thicknessIRLMean(:,:),'FaceColor',[0 1 0],'EdgeColor','none');
-title({'Group: Control'});
-xlabel('Thickness (pixel)');
-ylabel('Frequency');
-
-figure;
-histogram(pat_thicknessIRLMean(:,:),'FaceColor',[1 0 0],'EdgeColor','none');
-title({'Group: T1D'});
-xlabel('Thickness (pixel)');
-ylabel('Frequency');
-
-figure;
-histogram(con_thicknessIRLMean(:,:),'FaceColor',[0 1 0],'EdgeColor','none');
-xlabel('Thickness (pixel)');
-ylabel('Frequency');
-hold on
-histogram(pat_thicknessIRLMean(:,:),'FaceColor',[1 0 0],'EdgeColor','none');
-title({'Overlay of Averaged Control and Averaged T1D IRL Thickness Frequencies'});
-xlabel('Thickness (pixel)');
-ylabel('Frequency');
-legend('Control','T1D')
-
-figure;
-imagesc(diff_thicknessIRLMean(:,:));
-colorbar;
-[cmin,cmax] = caxis;
-caxis([-15,15]);
-title({'Averaged Control - Averaged T1D'});
-xlabel('(Nasal)               Pixel Location               (Temporal)');
-ylabel('(Inferior)               Pixel Location               (Superior)');
-ylabel(colorbar,'Thickness (pixel)');
-
-all_thicknessIRL_columns = zeros(262144,13,1);
-for i = 1:13;
-    for j = 2:512;
-        all_thicknessIRL_columns(((j-1)*(512)):((j*512)-1),i,1)...
-            = all_thicknessIRL(1:512,j,i);
-        all_thicknessIRL_columns(1:512,i,1) = all_thicknessIRL(1:512,1,i);
-        all_thicknessIRL_columns(262144,i,1) = all_thicknessIRL(512,512,i);
-    end
-end
-boxplot(all_thicknessIRL_columns);
-title({'IRL Thickness of Individual Participants'});
-xlabel('Participant');
-ylabel('IRL Thickness');
-
+% Averaged control and averaged T1D IRL thicknesses
 grouped_thicknessIRL_columns = zeros(262144,2,1);
 for j = 2:512;
     grouped_thicknessIRL_columns(((j-1)*(512)):((j*512)-1),1,1)...
@@ -242,6 +216,67 @@ title({'Averaged Control and Averaged T1D IRL Thicknesses'});
 xlabel('Group');
 ylabel('IRL Thickness');
 
+% PAGE 7 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Histograms of averaged control and averaged T1D IRL thicknesses
+figure;
+histogram(con_thicknessIRLMean(:,:),'FaceColor',[0 1 0],'EdgeColor','none');
+title({'Group: Control'});
+xlabel('Thickness (pixel)');
+ylabel('Frequency');
+
+figure;
+histogram(pat_thicknessIRLMean(:,:),'FaceColor',[1 0 0],'EdgeColor','none');
+title({'Group: T1D'});
+xlabel('Thickness (pixel)');
+ylabel('Frequency');
+
+% Overlay of histograms
+figure;
+histogram(con_thicknessIRLMean(:,:),'FaceColor',[0 1 0],'EdgeColor','none');
+xlabel('Thickness (pixel)');
+ylabel('Frequency');
+hold on
+histogram(pat_thicknessIRLMean(:,:),'FaceColor',[1 0 0],'EdgeColor','none');
+title({'Overlay of Averaged Control and Averaged T1D IRL Thickness Frequencies'});
+xlabel('Thickness (pixel)');
+ylabel('Frequency');
+legend('Control','T1D')
+
+% PAGE 8 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Corresponding histogram overlay with location on the retina
+bottom_range=57.5;
+top_range=70;
+overlap=zeros(512,512,3);
+con_green=zeros(512,512);
+con_green(con_thicknessIRLMean>bottom_range & con_thicknessIRLMean<top_range)=255;
+pat_red=zeros(512,512);
+pat_red(pat_thicknessIRLMean>bottom_range & pat_thicknessIRLMean<top_range)=255;
+overlap(:,:,1)=pat_red;
+overlap(:,:,2)=con_green;
+image(overlap);
+% Primitive version
+a=zeros(512,512,3);
+b=zeros(512,512);
+b(con_thicknessIRLMean>45 & con_thicknessIRLMean<50)=255;
+c=zeros(512,512);
+c(pat_thicknessIRLMean>45 & pat_thicknessIRLMean<50)=255;
+a(:,:,2)=b;
+a(:,:,1)=c;
+figure;image(a);
+
+% PAGE 9 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Averaged control minus averaged T1D IRL thickness
+figure;
+imagesc(diff_thicknessIRLMean(:,:));
+colorbar;
+[cmin,cmax] = caxis;
+caxis([-15,15]);
+title({'Averaged Control - Averaged T1D'});
+xlabel('(Nasal)               Pixel Location               (Temporal)');
+ylabel('(Inferior)               Pixel Location               (Superior)');
+ylabel(colorbar,'Thickness (pixel)');
+
+% Boxplot of averaged control minus averaged T1D IRL thicknesses
 diff_thicknessIRL_columns = zeros(262144,1,1);
 for j = 2:512;
     diff_thicknessIRL_columns(((j-1)*(512)):((j*512)-1),1,1)...
@@ -253,34 +288,20 @@ boxplot(diff_thicknessIRL_columns,'Labels',{'Averaged control minus averaged T1D
 title({'Averaged Control Minus Averaged T1D IRL Thicknesses'});
 ylabel('IRL Thickness');
 
-bottom_range=57.5;
-top_range=70;
-overlap=zeros(512,512,3);
-con_green=zeros(512,512);
-con_green(con_thicknessIRLMean>bottom_range & con_thicknessIRLMean<top_range)=255;
-pat_red=zeros(512,512);
-pat_red(pat_thicknessIRLMean>bottom_range & pat_thicknessIRLMean<top_range)=255;
-overlap(:,:,1)=pat_red;
-overlap(:,:,2)=con_green;
-image(overlap);
-
-a=zeros(512,512,3);
-b=zeros(512,512);
-b(con_thicknessIRLMean>45 & con_thicknessIRLMean<50)=255;
-c=zeros(512,512);
-c(pat_thicknessIRLMean>45 & pat_thicknessIRLMean<50)=255;
-a(:,:,2)=b;
-a(:,:,1)=c;
-figure;image(a);
-
+% PAGE 10 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Histogram of averaged control minus averaged T1D IRL thickness
 histogram(diff_thicknessIRLMean);
 title({'Averaged Control Minus Averaged T1D IRL Thicknesses'});
 xlabel('Thickness (pixel)');
 ylabel('Frequency');
 
+% Quantile-quantile (QQ) plot of averaged control minus averaged T1D IRL
+% thicknesses
 qqplot(diff_thicknessIRLMean(:));
 title({'Averaged Control Minus Averaged T1D IRL Thicknesses'});
 
+% PAGE 11 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% QQ plot of p-values comparing control and T1D IRL thicknesses
 hvalue_thicknessIRL = zeros(512,512,1);
 pvalue_thicknessIRL = zeros(512,512,1);
 for iRow = 1:512;
@@ -290,20 +311,11 @@ for iRow = 1:512;
         pvalue_thicknessIRL(iRow,iCol,1) = p;
     end
 end
-
-hvalue_thicknessIRL = zeros(512,512,1);
-pvalue_thicknessIRL = zeros(512,512,1);
-for iRow = 1:512;
-    for iCol = 1:512;
-        [h,p] = ttest2(all_thicknessIRL(iRow,iCol,1:5),all_thicknessIRL(iRow,iCol,6:13));
-        hvalue_thicknessIRL(iRow,iCol,1) = h;
-        pvalue_thicknessIRL(iRow,iCol,1) = p;
-    end
-end
-
+figure;
 qqplot(pvalue_thicknessIRL(:));
 title({'P-values Comparing Controls and T1D'});
 
+% Scatter plot of p-values comparing control and T1D IRL thicknesses
 figure;
 spy(hvalue_thicknessIRL,'k',5);
 title({'Locations of Significant IRL Thickness Difference','between Controls and T1Ds'});
@@ -320,7 +332,7 @@ for iPath = 1:5;
         - con_thicknessIRLMean)./con_thicknessIRLStd);
 end
 
-%% Miscellaneous 
+%% Other Miscellaneous 
 %Display zscore as mesh plot for each patient
 figure;mesh(zscore(:,:,1))
 caxis(r)
