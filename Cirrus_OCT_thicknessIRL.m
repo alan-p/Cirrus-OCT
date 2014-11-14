@@ -1,5 +1,3 @@
-% HOW TO GENERATE FOR JUST ONE?
-
 %% Cirrus_OCT_thicknessIRL
 % This function generates an unflattened inner retinal layer 
 % (IRL=GCL+IPL+INL), called "thicknessIRL". The dimensions are interpolated
