@@ -17,6 +17,7 @@ for iPath = 1:length(pathlist);
 end
 
 % Flip right eye participants to left eye orientation
+% Eye information should be in Cirrus_OCT_pathlist.m
 for participant = [3 4 5 9 10 12 13]
     all_thicknessIRL(:,:,participant)=fliplr(all_thicknessIRL(:,:,participant));
 end
@@ -135,6 +136,8 @@ printmat(dstat3,'Descriptive Statistics Summary (DIFFERENCE)',...
 
 % PAGE 2-4 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IRL thickness of each individual participant:
+% Suggest patient / control information gets moved to Cirrus_OCT_pathlist.m
+
 for i=1:5
 figure;
 imagesc(all_thicknessIRL(:,:,i));

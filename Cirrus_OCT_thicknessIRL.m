@@ -4,6 +4,10 @@
 % to achieve 512x512 square shape versus rectangular 512x128.
 
 function [thicknessIRL]=Cirrus_OCT_thicknessIRL(varargin)
+% Loads a cirrus OCT segmentation file and calculates thickness of the IRL
+% layer (layer5-layer1)
+% INPUTS:
+% [varargin] optional - path to folder containing segmentation results
 %% Browse for a file
 if nargin < 1
     [fname,path]=uigetfile('*.txt');
