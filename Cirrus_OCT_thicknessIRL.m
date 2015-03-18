@@ -18,7 +18,7 @@ end
 basename=fname(1:(length(fname)-5));
 
 % Create interpolated 512x512 INL-OPL surface (surface5)
-newname=[basename,num2str(5),'.txt'];
+newname=[basename,num2str(4),'.txt'];
 % Reads file and converts to table
 surface5=readtable(fullfile(path,newname),'Delimiter',' ',...
     'ReadRowNames',false,'ReadVariableNames',0);
@@ -28,7 +28,7 @@ surface5=table2array(surface5(:,1:512));
 surface5=imresize(surface5,[512 512],'bilinear');
 
 % Create interpolated 512x512 NFL-GCL surface (surface2)
-newname=[basename,num2str(2),'.txt'];
+newname=[basename,num2str(1),'.txt'];
 % Reads file and converts to table
 surface2=readtable(fullfile(path,newname),'Delimiter',' ',...
     'ReadRowNames',false,'ReadVariableNames',0);
