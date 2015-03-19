@@ -1,5 +1,5 @@
 %% Cirrus_OCT_pathlist
-% This script creates a directory, called "pathlist", that allows multiple
+% This script creates a variable, called "pathlist", that allows multiple
 % participants to be run subsequently and automatically. To add a
 % participant, list their 'SubID/subfolder'. Note: The subfolder must 
 % contain the corresponding surf0.txt file.
