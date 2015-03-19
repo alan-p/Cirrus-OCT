@@ -1,13 +1,3 @@
-%% Cirrus_OCT_runALL
-% This script runs all participants listed in "pathlist" to generate the
-% following:
-%   all_thicknessIRL
-%   con_thicknessIRLMean, con_thicknessIRLStd, pat_thicknessIRLMean,
-%       pat_thicknessIRLStd
-%   zscore
-% First, run the following:
-Cirrus_OCT_pathlist;
-
 %% Generate thicknessIRL for all participants in pathlist
 % Format: all_thicknessIRL(:,:,participant rank in pathlist)
 all_thicknessIRL = zeros(512,512,length(pathlist));
@@ -26,8 +16,8 @@ end
 % Format: con_thicknessIRLMean/con_thicknessIRLStd/pat_thicknessIRLMean/
 %         pat_thicknessIRLStd(512,512,1)
 con_thicknessIRLMean = mean(all_thicknessIRL(:,:,6:13),3);
-con_thicknessIRLStd = std(all_thicknessIRL(:,:,6:13),0,3);
 pat_thicknessIRLMean = mean(all_thicknessIRL(:,:,1:5),3);
+con_thicknessIRLStd = std(all_thicknessIRL(:,:,6:13),0,3);
 pat_thicknessIRLStd = std(all_thicknessIRL(:,:,1:5),0,3);
 
 %% Descriptive Statistics Summary (INDIVIDUAL Participants)
@@ -182,20 +172,22 @@ imagesc(con_thicknessIRLMean(:,:));
 colorbar;
 [cmin,cmax] = caxis;
 caxis([0,100]);
-title({'Group: Control'});
+title({'Average IRL Thickness: Control'});
 xlabel('(Nasal)               Pixel Location               (Temporal)');
 ylabel('(Inferior)               Pixel Location               (Superior)');
 ylabel(colorbar,'Thickness (pixel)');
+axis square;
 
 figure;
 imagesc(pat_thicknessIRLMean(:,:));
 colorbar;
 [cmin,cmax] = caxis;
 caxis([0,100]);
-title({'Group: T1D'});
+title({'Average IRL Thickness: T1D'});
 xlabel('(Nasal)               Pixel Location               (Temporal)');
 ylabel('(Inferior)               Pixel Location               (Superior)');
 ylabel(colorbar,'Thickness (pixel)');
+axis square;
 
 % Averaged control and averaged T1D IRL thicknesses
 grouped_thicknessIRL_columns = zeros(262144,2,1);
@@ -271,10 +263,11 @@ imagesc(diff_thicknessIRLMean(:,:));
 colorbar;
 [cmin,cmax] = caxis;
 caxis([-15,15]);
-title({'Averaged Control - Averaged T1D'});
+title({'Difference in IRL Thickness';'(Average T1D Minus Average Control)'});
 xlabel('(Nasal)               Pixel Location               (Temporal)');
 ylabel('(Inferior)               Pixel Location               (Superior)');
 ylabel(colorbar,'Thickness (pixel)');
+axis square;
 
 % Boxplot of averaged control minus averaged T1D IRL thicknesses
 diff_thicknessIRL_columns = zeros(262144,1,1);
@@ -344,3 +337,367 @@ for i = 2:256
 image(imresize(thicknessIRLVar{1,i},[256 256]))
 pause(0.25)
 end
+
+%Creating region of interest (ROI) free-hand
+figure;
+image(overlap);
+axis square;
+%Prompts defining the ROI with the current axes of current figure (gca)
+ROI=imfreehand(gca);
+%Creates logical where 1s are region inside ROI and 0s are region outside
+%ROI
+BW=createMask(ROI);
+
+
+%Plotting p-values for patients and controls
+pat_matrix=zeros(5,262144,1);
+for pat=1:5;
+    pat_rows=reshape(all_thicknessIRL(:,:,pat),[1 262144]);
+    pat_matrix(pat,:,1)=pat_rows;
+end
+
+con_matrix=zeros(8,262144,1);
+for con=6:13;
+    con_rows=reshape(all_thicknessIRL(:,:,con),[1 262144]);
+    con_matrix(con-5,:,1)=con_rows;
+end 
+
+pvalue=zeros(512,512,1);
+[h,p]=ttest2(pat_matrix,con_matrix);
+pvalue=reshape(p,[512 512]);
+
+%Calculate t-test between patients and controls by pixel, and drawing 3
+%ROIs
+pat_matrix=zeros(5,262144,1);
+for pat=1:5;
+    pat_rows=reshape(all_thicknessIRL(:,:,pat),[1 262144]);
+    pat_matrix(pat,:,1)=pat_rows;
+end
+
+con_matrix=zeros(8,262144,1);
+for con=6:13;
+    con_rows=reshape(all_thicknessIRL(:,:,con),[1 262144]);
+    con_matrix(con-5,:,1)=con_rows;
+end 
+
+pvalue=zeros(512,512,1);
+[h,p]=ttest2(pat_matrix,con_matrix);
+pvalue=reshape(p,[512 512]);
+
+figure;
+imagesc(pvalue);
+axis square;
+colormap gray;
+title('Significance of Difference in IRL Thickness');
+xlabel('(Nasal)               Pixel Location               (Temporal)');
+ylabel('(Inferior)               Pixel Location               (Superior)');
+ylabel(colorbar,'P-value');
+
+t = 0:pi/20:2*pi;
+R0 = 42.66666666666667; x0 = 256; y0 = 256;
+xi = R0*cos(t)+x0;
+yi = R0*sin(t)+y0;
+LineHandler = line(xi,yi,'LineWidth',1,'Color',[0 0 0]);
+R1 = 128; x0 = 256; y0 = 256;
+xj = R1*cos(t)+x0;
+yj = R1*sin(t)+y0;
+LineHandler = line(xj,yj,'LineWidth',1,'Color',[0 0 0]);
+R3 = 256; x0 = 256; y0 = 256;
+xk = R3*cos(t)+x0;
+yk = R3*sin(t)+y0;
+LineHandler = line(xk,yk,'LineWidth',1,'Color',[0 0 0]);
+
+ROI1=imfreehand(gca);
+region1=createMask(ROI1);
+ROI2=imfreehand(gca);
+region2=createMask(ROI2);
+ROI3=imfreehand(gca);
+region3=createMask(ROI3);
+ROI4=imfreehand(gca);
+region4=createMask(ROI3);
+
+%% Settings for automatic figure docking
+set(0,'DefaultFigureWindowStyle','docked')
+set(0,'DefaultFigureWindowStyle','normal')
+
+
+
+
+
+% Generating figure to select ROIs, and creating a boxplot and dotplot to
+% display individual participant means
+pat_matrix=zeros(5,262144,1);
+for pat=1:5;
+    pat_rows=reshape(all_thicknessIRL(:,:,pat),[1 262144]);
+    pat_matrix(pat,:,1)=pat_rows;
+end
+
+con_matrix=zeros(8,262144,1);
+for con=6:13;
+    con_rows=reshape(all_thicknessIRL(:,:,con),[1 262144]);
+    con_matrix(con-5,:,1)=con_rows;
+end 
+
+pvalue=zeros(512,512,1);
+[h,p]=ttest2(pat_matrix,con_matrix);
+pvalue=reshape(p,[512 512]);
+
+figure;
+imagesc(pvalue);
+axis square;
+colormap gray;
+title('IRL thickness differences between patients and controls by location');
+xlabel('(Nasal)               Pixel Location               (Temporal)');
+ylabel('(Inferior)               Pixel Location               (Superior)');
+ylabel(colorbar,'P-value');
+
+figure;
+imagesc(diff_thicknessIRLMean(:,:));
+axis square;
+colorbar;
+[cmin,cmax] = caxis;
+caxis([-15,15]);
+title({'IRL Thickness (Averaged Control - Averaged T1D)'});
+xlabel('(Nasal)               Pixel Location               (Temporal)');
+ylabel('(Inferior)               Pixel Location               (Superior)');
+ylabel(colorbar,'Thickness (pixel)');
+
+ROI1=imfreehand(gca);
+region1=createMask(ROI1);
+ROI2=imfreehand(gca);
+region2=createMask(ROI2);
+ROI3=imfreehand(gca);
+region3=createMask(ROI3);
+ROI4=imfreehand(gca);
+region4=createMask(ROI4);
+
+part1=(all_thicknessIRL(:,:,1));
+part2=(all_thicknessIRL(:,:,2));
+part3=(all_thicknessIRL(:,:,3));
+part4=(all_thicknessIRL(:,:,4));
+part5=(all_thicknessIRL(:,:,5));
+part6=(all_thicknessIRL(:,:,6));
+part7=(all_thicknessIRL(:,:,7));
+part8=(all_thicknessIRL(:,:,8));
+part9=(all_thicknessIRL(:,:,9));
+part10=(all_thicknessIRL(:,:,10));
+part11=(all_thicknessIRL(:,:,11));
+part12=(all_thicknessIRL(:,:,12));
+part13=(all_thicknessIRL(:,:,13));
+
+
+pat_regions=zeros(5,4,1);
+pat_mean=mean(part1(region1));
+pat_regions(1,1,1)=pat_mean;
+pat_mean=mean(part2(region1));
+pat_regions(2,1,1)=pat_mean;
+pat_mean=mean(part3(region1));
+pat_regions(3,1,1)=pat_mean;
+pat_mean=mean(part4(region1));
+pat_regions(4,1,1)=pat_mean;
+pat_mean=mean(part5(region1));
+pat_regions(5,1,1)=pat_mean;
+
+pat_mean=mean(part1(region2));
+pat_regions(1,2,1)=pat_mean;
+pat_mean=mean(part2(region2));
+pat_regions(2,2,1)=pat_mean;
+pat_mean=mean(part3(region2));
+pat_regions(3,2,1)=pat_mean;
+pat_mean=mean(part4(region2));
+pat_regions(4,2,1)=pat_mean;
+pat_mean=mean(part5(region2));
+pat_regions(5,2,1)=pat_mean;
+
+pat_mean=mean(part1(region3));
+pat_regions(1,3,1)=pat_mean;
+pat_mean=mean(part2(region3));
+pat_regions(2,3,1)=pat_mean;
+pat_mean=mean(part3(region3));
+pat_regions(3,3,1)=pat_mean;
+pat_mean=mean(part4(region3));
+pat_regions(4,3,1)=pat_mean;
+pat_mean=mean(part5(region3));
+pat_regions(5,3,1)=pat_mean;
+
+pat_mean=mean(part1(region4));
+pat_regions(1,4,1)=pat_mean;
+pat_mean=mean(part2(region4));
+pat_regions(2,4,1)=pat_mean;
+pat_mean=mean(part3(region4));
+pat_regions(3,4,1)=pat_mean;
+pat_mean=mean(part4(region4));
+pat_regions(4,4,1)=pat_mean;
+pat_mean=mean(part5(region4));
+pat_regions(5,4,1)=pat_mean;
+
+
+con_regions=zeros(8,4,1);
+con_mean=mean(part6(region1));
+con_regions(1,1,1)=con_mean;
+con_mean=mean(part7(region1));
+con_regions(2,1,1)=con_mean;
+con_mean=mean(part8(region1));
+con_regions(3,1,1)=con_mean;
+con_mean=mean(part9(region1));
+con_regions(4,1,1)=con_mean;
+con_mean=mean(part10(region1));
+con_regions(5,1,1)=con_mean;
+con_mean=mean(part11(region1));
+con_regions(6,1,1)=con_mean;
+con_mean=mean(part12(region1));
+con_regions(7,1,1)=con_mean;
+con_mean=mean(part13(region1));
+con_regions(8,1,1)=con_mean;
+
+con_mean=mean(part6(region2));
+con_regions(1,2,1)=con_mean;
+con_mean=mean(part7(region2));
+con_regions(2,2,1)=con_mean;
+con_mean=mean(part8(region2));
+con_regions(3,2,1)=con_mean;
+con_mean=mean(part9(region2));
+con_regions(4,2,1)=con_mean;
+con_mean=mean(part10(region2));
+con_regions(5,2,1)=con_mean;
+con_mean=mean(part11(region2));
+con_regions(6,2,1)=con_mean;
+con_mean=mean(part12(region2));
+con_regions(7,2,1)=con_mean;
+con_mean=mean(part13(region2));
+con_regions(8,2,1)=con_mean;
+
+con_mean=mean(part6(region3));
+con_regions(1,3,1)=con_mean;
+con_mean=mean(part7(region3));
+con_regions(2,3,1)=con_mean;
+con_mean=mean(part8(region3));
+con_regions(3,3,1)=con_mean;
+con_mean=mean(part9(region3));
+con_regions(4,3,1)=con_mean;
+con_mean=mean(part10(region3));
+con_regions(5,3,1)=con_mean;
+con_mean=mean(part11(region3));
+con_regions(6,3,1)=con_mean;
+con_mean=mean(part12(region3));
+con_regions(7,3,1)=con_mean;
+con_mean=mean(part13(region3));
+con_regions(8,3,1)=con_mean;
+
+con_mean=mean(part6(region4));
+con_regions(1,4,1)=con_mean;
+con_mean=mean(part7(region4));
+con_regions(2,4,1)=con_mean;
+con_mean=mean(part8(region4));
+con_regions(3,4,1)=con_mean;
+con_mean=mean(part9(region4));
+con_regions(4,4,1)=con_mean;
+con_mean=mean(part10(region4));
+con_regions(5,4,1)=con_mean;
+con_mean=mean(part11(region4));
+con_regions(6,4,1)=con_mean;
+con_mean=mean(part12(region4));
+con_regions(7,4,1)=con_mean;
+con_mean=mean(part13(region4));
+con_regions(8,4,1)=con_mean;
+
+pat_cols=[1 3 5 7; 1 3 5 7; 1 3 5 7; 1 3 5 7; 1 3 5 7];
+con_cols=[2 4 6 8; 2 4 6 8; 2 4 6 8; 2 4 6 8; 2 4 6 8; 2 4 6 8; 2 4 6 8; 2 4 6 8];
+
+figure;
+scatter(pat_cols(:,1),pat_regions(:,1),'filled','k');
+hold on;
+scatter(pat_cols(:,2),pat_regions(:,2),'filled','k');
+scatter(pat_cols(:,3),pat_regions(:,3),'filled','k');
+scatter(pat_cols(:,4),pat_regions(:,4),'filled','k');
+scatter(con_cols(:,1),con_regions(:,1),36,'k');
+scatter(con_cols(:,2),con_regions(:,2),36,'k');
+scatter(con_cols(:,3),con_regions(:,3),36,'k');
+scatter(con_cols(:,4),con_regions(:,4),36,'k');
+
+all_regions=zeros(8,8,1);
+where_zeros=find(all_regions==0);
+all_regions(where_zeros)=NaN;
+all_regions(1:5,1,1)=pat_regions(1:5,1,1);
+all_regions(1:5,3,1)=pat_regions(1:5,2,1);
+all_regions(1:5,5,1)=pat_regions(1:5,3,1);
+all_regions(1:5,7,1)=pat_regions(1:5,4,1);
+
+all_regions(1:8,2,1)=con_regions(1:8,1,1);
+all_regions(1:8,4,1)=con_regions(1:8,2,1);
+all_regions(1:8,6,1)=con_regions(1:8,3,1);
+all_regions(1:8,8,1)=con_regions(1:8,4,1);
+
+hold on;
+boxplot(all_regions);
+axis square;
+
+title({'IRL Thicknesses by Group and Region'});
+xlabel('Region');
+ylabel('Thickness (pixel)');
+
+% To compare the regions using t-tests and return the p-values
+all_thicknessIRLpatreg1(1,1,1)=mean(part1(region1));
+all_thicknessIRLpatreg1(2,1,1)=mean(part2(region1));
+all_thicknessIRLpatreg1(3,1,1)=mean(part3(region1));
+all_thicknessIRLpatreg1(4,1,1)=mean(part4(region1));
+all_thicknessIRLpatreg1(5,1,1)=mean(part5(region1));
+all_thicknessIRLconreg1(1,1,1)=mean(part6(region1));
+all_thicknessIRLconreg1(2,1,1)=mean(part7(region1));
+all_thicknessIRLconreg1(3,1,1)=mean(part8(region1));
+all_thicknessIRLconreg1(4,1,1)=mean(part9(region1));
+all_thicknessIRLconreg1(5,1,1)=mean(part10(region1));
+all_thicknessIRLconreg1(6,1,1)=mean(part11(region1));
+all_thicknessIRLconreg1(7,1,1)=mean(part12(region1));
+all_thicknessIRLconreg1(8,1,1)=mean(part13(region1));
+[h,p]=ttest2(all_thicknessIRLpatreg1,all_thicknessIRLconreg1)
+
+all_thicknessIRLpatreg2(1,1,1)=mean(part1(region2));
+all_thicknessIRLpatreg2(2,1,1)=mean(part2(region2));
+all_thicknessIRLpatreg2(3,1,1)=mean(part3(region2));
+all_thicknessIRLpatreg2(4,1,1)=mean(part4(region2));
+all_thicknessIRLpatreg2(5,1,1)=mean(part5(region2));
+all_thicknessIRLconreg2(1,1,1)=mean(part6(region2));
+all_thicknessIRLconreg2(2,1,1)=mean(part7(region2));
+all_thicknessIRLconreg2(3,1,1)=mean(part8(region2));
+all_thicknessIRLconreg2(4,1,1)=mean(part9(region2));
+all_thicknessIRLconreg2(5,1,1)=mean(part10(region2));
+all_thicknessIRLconreg2(6,1,1)=mean(part11(region2));
+all_thicknessIRLconreg2(7,1,1)=mean(part12(region2));
+all_thicknessIRLconreg2(8,1,1)=mean(part13(region2));
+[h,p]=ttest2(all_thicknessIRLpatreg2,all_thicknessIRLconreg2)
+
+all_thicknessIRLpatreg3(1,1,1)=mean(part1(region3));
+all_thicknessIRLpatreg3(2,1,1)=mean(part2(region3));
+all_thicknessIRLpatreg3(3,1,1)=mean(part3(region3));
+all_thicknessIRLpatreg3(4,1,1)=mean(part4(region3));
+all_thicknessIRLpatreg3(5,1,1)=mean(part5(region3));
+all_thicknessIRLconreg3(1,1,1)=mean(part6(region3));
+all_thicknessIRLconreg3(2,1,1)=mean(part7(region3));
+all_thicknessIRLconreg3(3,1,1)=mean(part8(region3));
+all_thicknessIRLconreg3(4,1,1)=mean(part9(region3));
+all_thicknessIRLconreg3(5,1,1)=mean(part10(region3));
+all_thicknessIRLconreg3(6,1,1)=mean(part11(region3));
+all_thicknessIRLconreg3(7,1,1)=mean(part12(region3));
+all_thicknessIRLconreg3(8,1,1)=mean(part13(region3));
+[h,p]=ttest2(all_thicknessIRLpatreg3,all_thicknessIRLconreg3)
+
+all_thicknessIRLpatreg4(1,1,1)=mean(part1(region4));
+all_thicknessIRLpatreg4(2,1,1)=mean(part2(region4));
+all_thicknessIRLpatreg4(3,1,1)=mean(part3(region4));
+all_thicknessIRLpatreg4(4,1,1)=mean(part4(region4));
+all_thicknessIRLpatreg4(5,1,1)=mean(part5(region4));
+all_thicknessIRLconreg4(1,1,1)=mean(part6(region4));
+all_thicknessIRLconreg4(2,1,1)=mean(part7(region4));
+all_thicknessIRLconreg4(3,1,1)=mean(part8(region4));
+all_thicknessIRLconreg4(4,1,1)=mean(part9(region4));
+all_thicknessIRLconreg4(5,1,1)=mean(part10(region4));
+all_thicknessIRLconreg4(6,1,1)=mean(part11(region4));
+all_thicknessIRLconreg4(7,1,1)=mean(part12(region4));
+all_thicknessIRLconreg4(8,1,1)=mean(part13(region4));
+[h,p]=ttest2(all_thicknessIRLpatreg4,all_thicknessIRLconreg4)
+
+%% Generating all thicknesses for all participants
+% First run "Generating all surfaces for all participants"
+% Generate all_thickness1
++

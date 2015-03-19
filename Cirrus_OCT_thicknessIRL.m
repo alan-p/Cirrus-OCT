@@ -25,7 +25,7 @@ surface5=readtable(fullfile(path,newname),'Delimiter',' ',...
 % Reshaping to remove column 512 (NaN) and change to array
 surface5=table2array(surface5(:,1:512));
 % Interpolating to create 512x512 square matrix
-surface5=imresize(surface5,[512 512],'bilinear');
+%surface5=imresize(surface5,[512 512],'bilinear');
 
 % Create interpolated 512x512 NFL-GCL surface (surface2)
 newname=[basename,num2str(1),'.txt'];
@@ -35,7 +35,7 @@ surface2=readtable(fullfile(path,newname),'Delimiter',' ',...
 % Reshaping to remove column 512 (NaN) and change to array
 surface2=table2array(surface2(:,1:512));
 % Interpolating to create 512x512 square matrix
-surface2=imresize(surface2,[512 512],'bilinear');
+%surface2=imresize(surface2,[512 512],'bilinear');
 
 %% Creating thicknessIRL
 % Subtract surface2 from surface5 to generate thicknessIRL 
