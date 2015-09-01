@@ -53,3 +53,23 @@ ha = axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0
 
 text(0.5, 1,'\bf Variance of retinal layer thicknesses',...
     'HorizontalAlignment','center','VerticalAlignment', 'top')
+
+
+figure;
+iPlot=0;
+for iLayer=[2,3,4]
+    iPlot=iPlot+1;
+    subplot(1,3,iPlot);
+       boxplot(layerVariance(iLayer,:),patGroups, ...
+        'labels',{'Diabetic','Control'});
+    %set(gca, 'OuterPosition', [0 0 0.5 .95]) % Shrink the plot a little
+    title(layerLabs{iLayer});
+    ylabel('Variance');
+end 
+
+%Add a main title
+ha = axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0
+1],'Box','off','Visible','off','Units','normalized', 'clipping' , 'off');
+
+text(0.5, 1,'\bf Variance of retinal layer thicknesses',...
+    'HorizontalAlignment','center','VerticalAlignment', 'top')
