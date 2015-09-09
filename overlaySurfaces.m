@@ -1,7 +1,7 @@
 function bscan_image = overlaySurfaces(varargin)
     %Overlay surface segmentation onto a bscan image
     %PARAMS:
-    %   layer_mat - a matrix of size #Ascans x #Bscans x #Surfaces such as
+    %   layer_mat - a matrix of size #Bscans x #Ascans x #Surfaces such as
     %      that generated from processXmlSurfaceFile
     %   bscan_num - (integer) the number of the bscan in the cube set
     %   imagefile - (string) the path to the bscan image (optional)
@@ -46,9 +46,9 @@ function bscan_image = overlaySurfaces(varargin)
             'A maximum of %i surfaces are supported, colours will be reused',size(colormap,1))
     end 
     
-    if bscan_num > size(layer_mat,2) | bscan_num < 1
+    if bscan_num > size(layer_mat,1) | bscan_num < 1
         error('overlaySurfaces:Params',...
-            'Invalid bscan number supplied, number must be between 1 and %i', size(layer_mat,2))
+            'Invalid bscan number supplied, number must be between 1 and %i', size(layer_mat,1))
     end
     
     if strcmp(imagefile,'')
@@ -61,7 +61,7 @@ function bscan_image = overlaySurfaces(varargin)
     
     bscan_image = imread(fullfile(pathname,[filename,ext]));
     
-    if size(bscan_image,2) ~= size(layer_mat,1)
+    if size(bscan_image,2) ~= size(layer_mat,2)
         error('overlaySurfaces:Params',...
             'shape of layer matrix does not match bscan image')
     end
@@ -82,7 +82,7 @@ function bscan_image = overlaySurfaces(varargin)
         coloridx = mod(iLayer-1,size(colormap,1))+1;
         color=colormap(coloridx,:);
         
-        ypix = layer_mat(:,bscan_num,iLayer)+1; %I think the output from Iowa reference algorithms is 0 indexed
+        ypix = layer_mat(bscan_num,:,iLayer)+1; %I think the output from Iowa reference algorithms is 0 indexed
         for xpix=1:length(ypix)
             bscan_image(ypix(xpix),xpix,:)=color;
         end

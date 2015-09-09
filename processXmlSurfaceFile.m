@@ -1,6 +1,6 @@
 function outmat = processXmlSurfaceFile(filename)
     %Load an XML Surface file generated from the IOWA reference algorithms
-    %Return a matrix of size ascans x bscans x layers
+    %Return a matrix of size bscans x ascans x layers
     %PARAMS:
     %   filename - optional filename of input xml
     if nargin < 1
@@ -34,7 +34,7 @@ function outmat = processXmlSurfaceFile(filename)
             'No ascans found for surface 0, bscan 0 in file %s.',[filename, ext])
     end 
     %preallocate the output matrix
-    outmat = zeros(nAscans,nBscans,nSurfaces,'uint16');
+    outmat = zeros(nBscans,nAscans,nSurfaces,'uint16');
     for iSurface=0:nSurfaces-1
         surface=surfaces.item(iSurface);
         surfIdx = str2num(surface.getElementsByTagName('label').item(0).getFirstChild.getData);
@@ -43,8 +43,10 @@ function outmat = processXmlSurfaceFile(filename)
             bscan=bscans.item(iBscan);
             ascans=bscan.getElementsByTagName('z');
             for iAscan=0:nAscans-1
-                outmat(iAscan+1,iBscan+1,iSurface+1)=str2num(ascans.item(iAscan).getFirstChild.getData);
+                outmat(iBscan+1,iAscan+1,iSurface+1)=str2num(ascans.item(iAscan).getFirstChild.getData);
             end
         end
     end
+    
+    
     
