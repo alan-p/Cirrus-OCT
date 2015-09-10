@@ -3,6 +3,9 @@ function createMhd(varargin)
 %PARAMS:
 %   path - full path to input folder
 %   outname - output filename (no extension)
+%   extension - file extension to search for, defaults to .tif
+%   spacing - [x y z] array defining pixel size in m,
+%       defaults to 6mm cirrus macular cube
 %USAGE:
 %   createMhd('path','c:\images\','outname','mydata')
 
